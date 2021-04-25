@@ -1,67 +1,92 @@
-package com.ssafy.algorithm;
+import java.io.*;
+import java.util.*;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.StringTokenizer;
-
-public class QuadTree {
-	public static int[][] map;
-	public static StringBuilder sb;
-	public static int cnt = 10;
-	
+public class TreeCircuit {
 	public static void main(String[] args) throws IOException {
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 		
 		int N = Integer.parseInt(br.readLine());
-		map = new int[N][N];
-		sb = new StringBuilder();
 		
-		for(int y=0;y<N;y++) {
-			String s = br.readLine();
-			for(int x=0;x<N;x++) {
-				map[y][x] = Integer.parseInt(s.charAt(x)+"");
-			}
+		Node[] nodes = new Node[N];
+		
+		for(int i=0;i<N;i++) {
+			StringTokenizer st = new StringTokenizer(br.readLine());
+			
+			char u = st.nextToken().charAt(0);
+			char l = st.nextToken().charAt(0);
+			char r = st.nextToken().charAt(0);
+			
+			nodes[u-'A'] = new Node(u, l, r);
 		}
 		
-		int[] idx_x = {0, map[0].length};
-		int[] idx_y = {0, map.length};
+		preorder(nodes, 0);
+		System.out.println();
 		
-		recursive(0, map[0].length, 0, map.length);
+		inorder(nodes, 0);
+		System.out.println();
 		
-		bw.write(sb.toString()+"");
+		postorder(nodes, 0);
+		System.out.println();
+		
 		bw.flush();
 		br.close();
 		bw.close();
 	}
 	
-	private static void recursive(int x1, int x2, int y1, int y2) {
+	public static void inorder(Node[] nodes, int idx) {		
+		if(idx<0 || idx>=nodes.length)
+			return;
 		
-		if(!chk(x1, x2, y1, y2)) {
-			sb.append("(");
-			recursive(x1, (x1+x2)/2, y1, (y1+y2)/2);
-			recursive((x1+x2)/2, x2, y1, (y1+y2)/2);
-			recursive(x1, (x1+x2)/2, (y1+y2)/2, y2);
-			recursive((x1+x2)/2, x2, (y1+y2)/2, y2);
-			sb.append(")");
-		}else
-			sb.append(map[y1][x1]+"");
+		Node node = nodes[idx];
+		
+		if(node.left=='.') {
+			System.out.print(node.vertex);
+		}else {
+			inorder(nodes, node.left-'A');
+			System.out.print(node.vertex);
+		}
+		
+		inorder(nodes, node.right-'A');
 	}
 	
-	private static boolean chk(int x1, int x2, int y1, int y2) {
-		int pre=0;
-		for(int y=y1;y<y2;y++) {
-			for(int x=x1;x<x2;x++) {
-				if(x==x1 && y==y1)
-					pre = map[y][x];
-				else if(pre != map[y][x])
-					return false;
-			}
+	public static void postorder(Node[] nodes, int idx) {
+		if(idx<0 || idx>=nodes.length)
+			return;
+		
+		Node node = nodes[idx];
+		
+		if(node.left=='.' && node.right=='.') {
+			System.out.print(node.vertex);
+		}else {
+			postorder(nodes, node.left-'A');
+			postorder(nodes, node.right-'A');
+			System.out.print(node.vertex);
 		}
-		return true;
+	}
+	
+	public static void preorder(Node[] nodes, int idx) {
+		if(nodes.length<=idx || 0>idx)
+			return;
+		if(nodes[idx]==null)
+			return;
+		
+		Node node = nodes[idx];
+		System.out.print(node.vertex);
+		
+		preorder(nodes, node.left-'A');
+		preorder(nodes, node.right-'A');
+	}
+	
+}
+
+class Node{
+	char vertex, left, right;
+	
+	public Node(char vertex, char left, char right) {
+		this.vertex = vertex;
+		this.left = left;
+		this.right = right;
 	}
 }
